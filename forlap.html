@@ -1,0 +1,371 @@
+ <!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>محاكاة قوة لابلاس (ساق موصلة بين قطبي مغناطيس)</title>
+<style>
+  :root{
+    --bg1:#0e1a26; --bg2:#1c2f3f; --magN:#e74c3c; --magS:#2e86de;
+    --accent:#4fd1c5; --panel:#132433; --copper:#d17a3d; --ok:#2ecc71;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; font-family:'Segoe UI', Tahoma, Arial, sans-serif;
+    background:radial-gradient(circle at 50% 0%, var(--bg2), var(--bg1));
+    color:#eef4f7; display:flex; flex-direction:column; align-items:center; padding:16px;
+  }
+  h1{margin:6px 0 2px; font-size:1.4rem; color:var(--accent); text-shadow:0 0 12px rgba(79,209,197,.35); text-align:center;}
+  p.sub{margin:0 0 14px; color:#9fb2bd; font-size:.9rem; text-align:center; max-width:660px;}
+  .wrap{
+    background:var(--panel); border:1px solid #24404f; border-radius:16px;
+    box-shadow:0 10px 40px rgba(0,0,0,.5); padding:14px; width:100%; max-width:920px;
+  }
+  canvas{width:100%; height:auto; display:block; border-radius:10px; background:#0a141c;}
+  .controls{
+    display:flex; flex-wrap:wrap; gap:14px; align-items:center; justify-content:center;
+    margin-top:14px; padding:12px; background:#0f1e2a; border-radius:12px; border:1px solid #22394a;
+  }
+  .ctrl{display:flex; flex-direction:column; gap:4px; min-width:150px;}
+  .ctrl label{font-size:.8rem; color:var(--accent);}
+  input[type=range]{accent-color:var(--copper); width:100%;}
+  button{
+    background:linear-gradient(180deg,#3a7bd5,#1c4e8a); border:none; color:#eef4f7;
+    font-weight:700; padding:10px 16px; border-radius:10px; cursor:pointer; font-size:.9rem;
+    box-shadow:0 3px 0 #123055; transition:transform .1s;
+  }
+  button:active{transform:translateY(2px); box-shadow:0 1px 0 #123055;}
+  button.secondary{background:linear-gradient(180deg,#41606d,#2a4451); box-shadow:0 3px 0 #1c2d35;}
+  button.warn{background:linear-gradient(180deg,#c0392b,#7a1f14); box-shadow:0 3px 0 #4d130c;}
+  button.toggle-off{background:linear-gradient(180deg,#6b6b6b,#3d3d3d); box-shadow:0 3px 0 #222;}
+  .stats{
+    display:flex; gap:18px; flex-wrap:wrap; justify-content:center; margin-top:12px;
+    font-size:.85rem; color:#bcd0d9;
+  }
+  .stats span b{color:var(--accent);}
+  .formula{
+    text-align:center; margin-top:10px; font-size:.95rem; color:#e8c874; font-weight:700;
+    background:rgba(232,200,116,0.08); padding:8px; border-radius:8px;
+  }
+  .legend{
+    display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:10px; font-size:.78rem; color:#8fa3ad;
+  }
+  .legend i{display:inline-block; width:10px; height:10px; border-radius:2px; margin-inline-end:5px; vertical-align:middle;}
+  footer{margin-top:16px; color:#5f7683; font-size:.75rem; text-align:center;}
+</style>
+</head>
+<body>
+
+<h1>🧲⚡ قوة لابلاس: ساق موصلة بين قطبي مغناطيس على شكل U</h1>
+<p class="sub">عند تمرير تيار كهربائي في ساق معدنية موضوعة بين قطبي مغناطيس على شكل U، تتولّد قوة (قوة لابلاس/أمبير) تدفع الساق للحركة على القضيبين الموصلين. اتجاه القوة يُحدَّد بقاعدة اليد اليمنى/اليسرى حسب اتجاه التيار واتجاه المجال المغناطيسي.</p>
+
+<div class="wrap">
+  <canvas id="c" width="880" height="440"></canvas>
+
+  <div class="formula">F = B · I · L      (القوة = المجال المغناطيسي × التيار × طول الساق)</div>
+
+  <div class="controls">
+    <button id="power">⏻ فصل التيار</button>
+    <button id="reverseCurrent" class="secondary">🔁 عكس اتجاه التيار</button>
+    <button id="reverseMagnet" class="secondary">🔁 عكس أقطاب المغناطيس</button>
+    <div class="ctrl">
+      <label>🔋 شدة التيار</label>
+      <input type="range" id="current" min="10" max="100" value="55">
+    </div>
+    <div class="ctrl">
+      <label>🧲 قوة المجال المغناطيسي</label>
+      <input type="range" id="field" min="10" max="100" value="60">
+    </div>
+    <button id="reset" class="warn">↺ إعادة ضبط</button>
+  </div>
+
+  <div class="stats">
+    <span>التيار I: <b id="iStat">0</b> A</span>
+    <span>المجال B: <b id="bStat">0</b> T</span>
+    <span>القوة F: <b id="fStat">0</b> N</span>
+    <span>الاتجاه: <b id="dirStat">—</b></span>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:var(--magN)"></i>القطب الشمالي (N)</span>
+    <span><i style="background:var(--magS)"></i>القطب الجنوبي (S)</span>
+    <span><i style="background:var(--copper)"></i>الساق الموصلة</span>
+    <span><i style="background:gold"></i>اتجاه التيار I</span>
+    <span><i style="background:#2ecc71"></i>اتجاه القوة F</span>
+  </div>
+</div>
+
+<footer>محاكاة تعليمية مبسّطة لقاعدة اليد اليسرى/اليمنى وقوة لابلاس على موصل يحمل تياراً داخل مجال مغناطيسي.</footer>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+const currentSlider = document.getElementById('current');
+const fieldSlider = document.getElementById('field');
+const powerBtn = document.getElementById('power');
+const reverseCurrentBtn = document.getElementById('reverseCurrent');
+const reverseMagnetBtn = document.getElementById('reverseMagnet');
+const resetBtn = document.getElementById('reset');
+const iStat = document.getElementById('iStat');
+const bStat = document.getElementById('bStat');
+const fStat = document.getElementById('fStat');
+const dirStat = document.getElementById('dirStat');
+
+let powerOn = true;
+let currentDir = 1;     // 1: يدخل من القضيب الخلفي ويخرج من الأمامي (نحو المُشاهد) أو العكس
+let magnetFlip = 1;     // 1: N فوق - S تحت ; -1: معكوس
+let rodZ = 0;            // موضع الساق على المحور العمقي (نستخدمه بصرياً كإزاحة أفقية للبساطة)
+let rodX = 0;            // الإزاحة الأفقية الفعلية للساق (px) بفعل القوة
+let rodVX = 0;
+let sparkParticles = [];
+
+const geo = {
+  gapCenterX: 440, gapCenterY: 210,
+  poleW: 70, poleH: 130, poleGap: 210,
+  railLen: 300, railSpacing: 130
+};
+
+function reset(){
+  currentSlider.value = 55; fieldSlider.value = 60;
+  currentDir = 1; magnetFlip = 1;
+  rodX = 0; rodVX = 0;
+  powerOn = true; powerBtn.textContent = '⏻ فصل التيار'; powerBtn.classList.remove('toggle-off');
+}
+
+powerBtn.addEventListener('click', ()=>{
+  powerOn = !powerOn;
+  powerBtn.textContent = powerOn ? '⏻ فصل التيار' : '⏻ توصيل التيار';
+  powerBtn.classList.toggle('toggle-off', !powerOn);
+});
+reverseCurrentBtn.addEventListener('click', ()=>{ currentDir *= -1; });
+reverseMagnetBtn.addEventListener('click', ()=>{ magnetFlip *= -1; });
+resetBtn.addEventListener('click', reset);
+
+function computeForce(){
+  const I = powerOn ? (+currentSlider.value)/100*8 : 0;   // أمبير تقريبي
+  const B = (+fieldSlider.value)/100*1.6;                  // تسلا تقريبي
+  const L = 1.0;
+  // اتجاه القوة: F = I L × B. مبسّط: القوة أفقية (يمين/يسار) حسب حاصل ضرب اتجاه التيار واتجاه المجال
+  const forceSign = currentDir * magnetFlip;
+  const F = I*B*L * forceSign;
+  return { I, B, F };
+}
+
+function update(dt){
+  const { I, B, F } = computeForce();
+
+  // ديناميكا بسيطة: القوة تسرّع الساق، احتكاك يعيدها للتوازن عند حدود القضبان
+  const maxTravel = geo.railLen/2 - 40;
+  const springBack = rodX > maxTravel ? -(rodX-maxTravel)*0.02 : (rodX < -maxTravel ? -(rodX+maxTravel)*0.02 : 0);
+  rodVX += (F*6 + springBack*20) * 0.02*dt;
+  rodVX *= Math.pow(0.9, dt/16);
+  rodX += rodVX*dt*0.05;
+  rodX = Math.min(Math.max(rodX, -maxTravel-10), maxTravel+10);
+
+  if(powerOn && Math.random() < 0.15){
+    sparkParticles.push({
+      x: geo.gapCenterX + rodX + (Math.random()-0.5)*10,
+      y: geo.gapCenterY + (Math.random()-0.5)*80,
+      life: 10+Math.random()*10
+    });
+  }
+  sparkParticles = sparkParticles.filter(s=>{ s.life--; return s.life>0; });
+
+  iStat.textContent = I.toFixed(1);
+  bStat.textContent = B.toFixed(1);
+  fStat.textContent = Math.abs(F).toFixed(1);
+  dirStat.textContent = !powerOn ? '—' : (F>0.05 ? 'يمين ⇨' : (F<-0.05 ? 'يسار ⇦' : 'بلا حركة'));
+}
+
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+function drawUMagnet(){
+  const {gapCenterX:cx, gapCenterY:cy, poleW, poleH, poleGap} = geo;
+  const topIsN = magnetFlip>0;
+
+  // القطب العلوي
+  let gT = ctx.createLinearGradient(0,cy-poleGap/2-poleH,0,cy-poleGap/2);
+  if(topIsN){ gT.addColorStop(0,'#ff8a75'); gT.addColorStop(1,'#c0392b'); }
+  else { gT.addColorStop(0,'#3a7bd5'); gT.addColorStop(1,'#1c4e8a'); }
+  ctx.fillStyle = gT;
+  roundRect(cx-poleW/2, cy-poleGap/2-poleH, poleW, poleH, 8); ctx.fill();
+  ctx.strokeStyle='#111'; ctx.lineWidth=3; roundRect(cx-poleW/2, cy-poleGap/2-poleH, poleW, poleH, 8); ctx.stroke();
+  ctx.fillStyle='#fff'; ctx.font='bold 24px Tahoma'; ctx.textAlign='center';
+  ctx.fillText(topIsN?'N':'S', cx, cy-poleGap/2-poleH/2+8);
+
+  // القطب السفلي
+  let gB = ctx.createLinearGradient(0,cy+poleGap/2,0,cy+poleGap/2+poleH);
+  if(!topIsN){ gB.addColorStop(0,'#ff8a75'); gB.addColorStop(1,'#c0392b'); }
+  else { gB.addColorStop(0,'#3a7bd5'); gB.addColorStop(1,'#1c4e8a'); }
+  ctx.fillStyle = gB;
+  roundRect(cx-poleW/2, cy+poleGap/2, poleW, poleH, 8); ctx.fill();
+  ctx.strokeStyle='#111'; ctx.lineWidth=3; roundRect(cx-poleW/2, cy+poleGap/2, poleW, poleH, 8); ctx.stroke();
+  ctx.fillStyle='#fff';
+  ctx.fillText(topIsN?'S':'N', cx, cy+poleGap/2+poleH/2+8);
+
+  // جسم U الواصل بين القطبين (من الخلف يميناً)
+  ctx.strokeStyle = '#8a6d2f'; ctx.lineWidth = 24; ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.beginPath();
+  ctx.moveTo(cx+poleW/2+8, cy-poleGap/2-poleH+14);
+  ctx.lineTo(cx+poleW/2+70, cy-poleGap/2-poleH+14);
+  ctx.lineTo(cx+poleW/2+70, cy+poleGap/2+poleH-14);
+  ctx.lineTo(cx+poleW/2+8, cy+poleGap/2+poleH-14);
+  ctx.stroke();
+  ctx.strokeStyle = '#c9a24b'; ctx.lineWidth = 16;
+  ctx.beginPath();
+  ctx.moveTo(cx+poleW/2+8, cy-poleGap/2-poleH+14);
+  ctx.lineTo(cx+poleW/2+70, cy-poleGap/2-poleH+14);
+  ctx.lineTo(cx+poleW/2+70, cy+poleGap/2+poleH-14);
+  ctx.lineTo(cx+poleW/2+8, cy+poleGap/2+poleH-14);
+  ctx.stroke();
+
+  // خطوط المجال المغناطيسي بين القطبين (رأسية من N إلى S)
+  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+  ctx.lineWidth = 1.4;
+  const fromY = topIsN ? cy-poleGap/2 : cy+poleGap/2;
+  const toY = topIsN ? cy+poleGap/2 : cy-poleGap/2;
+  for(let i=-3;i<=3;i++){
+    const x = cx + i*18;
+    const dir = topIsN ? 1 : -1;
+    drawArrowLine(x, fromY, x, toY, dir);
+  }
+}
+
+function drawArrowLine(x1,y1,x2,y2,dir){
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  const midY = (y1+y2)/2;
+  const ah = 6;
+  ctx.beginPath();
+  if(dir>0){
+    ctx.moveTo(x1, midY-ah); ctx.lineTo(x1-5,midY-ah-8); ctx.lineTo(x1+5,midY-ah-8);
+  } else {
+    ctx.moveTo(x1, midY+ah); ctx.lineTo(x1-5,midY+ah+8); ctx.lineTo(x1+5,midY+ah+8);
+  }
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fill();
+}
+
+function drawRailsAndRod(){
+  const {gapCenterX:cx, gapCenterY:cy, poleGap, railLen} = geo;
+  const railY1 = cy - poleGap/2 + 20;
+  const railY2 = cy + poleGap/2 - 20;
+  const railX1 = cx - railLen/2;
+  const railX2 = cx + railLen/2;
+
+  // القضيبان الموصلان (يمتدان أفقياً، الساق تنزلق عليهما)
+  ctx.strokeStyle = '#8fa3ad'; ctx.lineWidth = 6; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(railX1, railY1); ctx.lineTo(railX2, railY1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(railX1, railY2); ctx.lineTo(railX2, railY2); ctx.stroke();
+
+  // مصدر التيار (بطارية) موصول بطرف القضيبين
+  const bx = railX1-70, by=(railY1+railY2)/2-30, bw=50, bh=60;
+  ctx.fillStyle = '#2a343a';
+  roundRect(bx,by,bw,bh,8); ctx.fill();
+  ctx.strokeStyle='#1c262b'; ctx.lineWidth=2; roundRect(bx,by,bw,bh,8); ctx.stroke();
+  ctx.fillStyle='#eee'; ctx.font='bold 14px Tahoma'; ctx.textAlign='center';
+  ctx.fillText('+', bx+bw-14, by+bh/2+5);
+  ctx.fillText('−', bx+14, by+bh/2+5);
+  ctx.strokeStyle='#4a5c66'; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.moveTo(bx+bw, by+14); ctx.lineTo(railX1, railY1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bx+bw, by+bh-14); ctx.lineTo(railX1, railY2); ctx.stroke();
+
+  // الساق المتحركة
+  const rodPosX = cx + rodX;
+  ctx.strokeStyle = '#e8c874';
+  ctx.lineWidth = 12;
+  ctx.lineCap='round';
+  let rg = ctx.createLinearGradient(rodPosX,railY1,rodPosX,railY2);
+  rg.addColorStop(0,'#f0d18a'); rg.addColorStop(0.5,'#d17a3d'); rg.addColorStop(1,'#8a4a1f');
+  ctx.strokeStyle = rg;
+  ctx.beginPath();
+  ctx.moveTo(rodPosX, railY1);
+  ctx.lineTo(rodPosX, railY2);
+  ctx.stroke();
+
+  // سهم اتجاه التيار في الساق
+  if(powerOn){
+    ctx.fillStyle = 'gold';
+    const midY = (railY1+railY2)/2;
+    const dir = currentDir;
+    ctx.beginPath();
+    if(dir>0){
+      ctx.moveTo(rodPosX, railY1+14); ctx.lineTo(rodPosX-7, railY1+28); ctx.lineTo(rodPosX+7, railY1+28);
+    } else {
+      ctx.moveTo(rodPosX, railY2-14); ctx.lineTo(rodPosX-7, railY2-28); ctx.lineTo(rodPosX+7, railY2-28);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.font='bold 13px Tahoma'; ctx.textAlign='center';
+    ctx.fillText('I', rodPosX+16, midY+5);
+  }
+
+  // سهم القوة الأفقي فوق الساق
+  const { F } = computeForce();
+  if(Math.abs(F) > 0.05){
+    const arrowLen = Math.min(Math.abs(F)*12, 60);
+    const dir = F>0?1:-1;
+    const ay = railY1-24;
+    ctx.strokeStyle = '#2ecc71'; ctx.fillStyle='#2ecc71'; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(rodPosX,ay); ctx.lineTo(rodPosX+dir*arrowLen,ay); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(rodPosX+dir*arrowLen, ay);
+    ctx.lineTo(rodPosX+dir*arrowLen-dir*9, ay-6);
+    ctx.lineTo(rodPosX+dir*arrowLen-dir*9, ay+6);
+    ctx.closePath(); ctx.fill();
+    ctx.font='bold 13px Tahoma'; ctx.textAlign='center'; ctx.fillStyle='#2ecc71';
+    ctx.fillText('F', rodPosX+dir*arrowLen+dir*12, ay+4);
+  }
+}
+
+function drawSparks(){
+  sparkParticles.forEach(s=>{
+    const a = Math.max(s.life/20,0);
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,2+Math.random()*2,0,Math.PI*2);
+    ctx.fillStyle = `rgba(255,240,150,${a*0.6})`;
+    ctx.fill();
+  });
+}
+
+function drawLabels(){
+  ctx.fillStyle = '#9fb2bd';
+  ctx.font = '13px Tahoma';
+  ctx.textAlign = 'center';
+  ctx.fillText('مصدر التيار', geo.gapCenterX-geo.railLen/2-70, geo.gapCenterY-70);
+  ctx.fillText('الساق المعدنية الموصلة', geo.gapCenterX, geo.gapCenterY+geo.poleGap/2+40);
+  ctx.fillText('مغناطيس على شكل U', geo.gapCenterX, 40);
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#0a141c';
+  ctx.fillRect(0,0,W,H);
+
+  drawLabels();
+  drawUMagnet();
+  drawRailsAndRod();
+  drawSparks();
+}
+
+let lastT = performance.now();
+function loop(now){
+  const dt = Math.min(now-lastT, 40);
+  lastT = now;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

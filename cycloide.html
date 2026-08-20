@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>السيكلويد مع أثر المركز</title>
+
+<style>
+  body {
+    text-align: center;
+    font-family: Arial;
+    background: #f4f4f4;
+  }
+
+  canvas {
+    background: white;
+    border: 1px solid #333;
+    margin-top: 15px;
+  }
+
+  button {
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+</style>
+</head>
+
+<body>
+
+<h2>السيكلويد مع تتبع المركز</h2>
+
+<button onclick="start()">تشغيل</button>
+<button onclick="reset()">إعادة</button>
+
+<canvas id="canvas" width="900" height="450"></canvas>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const R = 50;
+const baseY = 300;
+
+let t = 0;
+let running = false;
+
+let cycloid = [];
+let centerPath = [];
+
+function drawFrame() {
+  if (!running) return;
+
+  // مسح كامل (لكن سنعيد رسم كل شيء)
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // الأرض
+  ctx.beginPath();
+  ctx.moveTo(0, baseY);
+  ctx.lineTo(canvas.width, baseY);
+  ctx.strokeStyle = "black";
+  ctx.stroke();
+
+  // مركز الدائرة (حركة مستقيمة)
+  const cx = R * t;
+  const cy = baseY - R;
+
+  // نقطة على المحيط
+  const x = cx - R * Math.sin(t);
+  const y = cy + R * Math.cos(t);
+
+  // حفظ المسارات
+  centerPath.push({x: cx, y: cy});
+  cycloid.push({x, y});
+
+  // رسم أثر المركز (خط مستقيم)
+  ctx.beginPath();
+  ctx.strokeStyle = "green";
+  for (let i = 0; i < centerPath.length; i++) {
+    ctx.lineTo(centerPath[i].x, centerPath[i].y);
+  }
+  ctx.stroke();
+
+  // رسم السيكلويد
+  ctx.beginPath();
+  ctx.strokeStyle = "red";
+  for (let i = 0; i < cycloid.length; i++) {
+    ctx.lineTo(cycloid[i].x, cycloid[i].y);
+  }
+  ctx.stroke();
+
+  // رسم الدائرة (تظهر فقط في مكانها الحالي)
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.strokeStyle = "blue";
+  ctx.stroke();
+
+  // المركز (نقطة خضراء)
+  ctx.beginPath();
+  ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+  ctx.fillStyle = "green";
+  ctx.fill();
+
+  // نقطة السيكلويد (نقطة حمراء)
+  ctx.beginPath();
+  ctx.arc(x, y, 5, 0, Math.PI * 2);
+  ctx.fillStyle = "red";
+  ctx.fill();
+
+  t += 0.03;
+
+  requestAnimationFrame(drawFrame);
+}
+
+function start() {
+  if (!running) {
+    running = true;
+    drawFrame();
+  }
+}
+
+function reset() {
+  running = false;
+  t = 0;
+  cycloid = [];
+  centerPath = [];
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // الأرض
+  ctx.beginPath();
+  ctx.moveTo(0, baseY);
+  ctx.lineTo(canvas.width, baseY);
+  ctx.stroke();
+}
+</script>
+
+</body>

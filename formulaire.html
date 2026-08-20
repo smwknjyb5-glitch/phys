@@ -1,0 +1,526 @@
+ <!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title> علاقات الفيزيائية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+  :root{
+    --navy-deep:#050b1e;
+    --navy:#0a1630;
+    --navy-light:#132248;
+    --navy-card:#0f1c3f;
+    --gold:#e8c468;
+    --gold-soft:#f0d896;
+    --gold-dim:rgba(232,196,104,0.35);
+    --text:#dbe4ff;
+    --muted:#8ea0d4;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:radial-gradient(ellipse at top, #0d1a3c 0%, var(--navy-deep) 55%, #000 100%);
+    font-family:"Cairo",sans-serif;
+    color:var(--text);
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, #fff8 50%, transparent 50%),
+      radial-gradient(1px 1px at 70% 60%, #fff6 50%, transparent 50%),
+      radial-gradient(1.5px 1.5px at 40% 80%, #fff9 50%, transparent 50%),
+      radial-gradient(1px 1px at 85% 20%, #fff5 50%, transparent 50%),
+      radial-gradient(1px 1px at 55% 45%, #fff7 50%, transparent 50%),
+      radial-gradient(1.5px 1.5px at 10% 70%, #fff8 50%, transparent 50%),
+      radial-gradient(1px 1px at 90% 85%, #fff6 50%, transparent 50%);
+    background-size:300px 300px;
+    z-index:-1;
+    opacity:0.55;
+    pointer-events:none;
+  }
+  .katex{ direction:ltr; unicode-bidi:isolate; }
+
+  /* ---------- HERO ---------- */
+  header.hero{
+    position:relative;
+    padding:34px 20px 26px;
+    text-align:center;
+    border-bottom:1px solid rgba(232,196,104,0.18);
+    overflow:hidden;
+  }
+  #constellation{
+    display:block;
+    width:100%;
+    max-width:1000px;
+    height:220px;
+    margin:0 auto 8px;
+  }
+  .eyebrow{
+    color:var(--gold);
+    letter-spacing:3px;
+    font-size:12px;
+    font-weight:600;
+    text-transform:uppercase;
+  }
+  h1{
+    margin:6px 0 4px;
+    font-size:clamp(26px,4.5vw,40px);
+    font-weight:900;
+    color:var(--gold-soft);
+    text-shadow:0 0 24px rgba(232,196,104,0.35);
+  }
+  .subtitle{
+    color:var(--muted);
+    font-size:14.5px;
+    max-width:560px;
+    margin:0 auto;
+    line-height:1.8;
+  }
+  .stats{
+    display:flex;
+    justify-content:center;
+    gap:28px;
+    margin-top:18px;
+    flex-wrap:wrap;
+  }
+  .stat{ text-align:center; }
+  .stat b{
+    display:block;
+    font-size:22px;
+    color:var(--gold);
+    font-family:"JetBrains Mono",monospace;
+  }
+  .stat span{
+    font-size:11.5px;
+    color:var(--muted);
+  }
+
+  /* ---------- CONTROLS ---------- */
+  .controls{
+    max-width:1080px;
+    margin:26px auto 0;
+    padding:0 20px;
+  }
+  #searchBox{
+    width:100%;
+    padding:13px 18px;
+    border-radius:12px;
+    border:1px solid var(--gold-dim);
+    background:var(--navy-light);
+    color:var(--text);
+    font-family:inherit;
+    font-size:15px;
+    outline:none;
+  }
+  #searchBox::placeholder{ color:var(--muted); }
+  #searchBox:focus{ border-color:var(--gold); box-shadow:0 0 0 3px rgba(232,196,104,0.12); }
+
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:14px;
+  }
+  .chip{
+    padding:7px 16px;
+    border-radius:999px;
+    border:1px solid var(--gold-dim);
+    background:transparent;
+    color:var(--muted);
+    font-family:inherit;
+    font-size:13px;
+    cursor:pointer;
+    transition:all .15s ease;
+    white-space:nowrap;
+  }
+  .chip:hover{ border-color:var(--gold); color:var(--gold-soft); }
+  .chip.active{
+    background:var(--gold);
+    color:var(--navy-deep);
+    font-weight:700;
+    border-color:var(--gold);
+  }
+
+  /* ---------- GRID ---------- */
+  main{
+    max-width:1080px;
+    margin:0 auto;
+    padding:24px 20px 60px;
+  }
+  .catHeading{
+    color:var(--gold-soft);
+    font-size:15px;
+    font-weight:700;
+    margin:30px 2px 12px;
+    padding-right:12px;
+    border-right:3px solid var(--gold);
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(250px,1fr));
+    gap:14px;
+  }
+  .card{
+    background:linear-gradient(160deg, var(--navy-light), var(--navy-card));
+    border:1px solid rgba(232,196,104,0.18);
+    border-radius:14px;
+    padding:16px 16px 14px;
+    transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    cursor:default;
+  }
+  .card:hover{
+    border-color:rgba(232,196,104,0.55);
+    transform:translateY(-2px);
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  }
+  .card h3{
+    margin:0 0 10px;
+    font-size:14.5px;
+    color:var(--gold-soft);
+    font-weight:700;
+  }
+  .eqWrap{
+    background:rgba(0,0,0,0.25);
+    border-radius:8px;
+    padding:14px 10px;
+    text-align:center;
+    margin-bottom:10px;
+    overflow-x:auto;
+  }
+  .eqWrap .katex{ font-size:1.15em; color:#fdf3d8; }
+  .card p.desc{
+    margin:0 0 8px;
+    font-size:12.8px;
+    color:var(--text);
+    line-height:1.75;
+    opacity:0.92;
+  }
+  .vars{
+    font-size:11.5px;
+    color:var(--muted);
+    line-height:1.9;
+    border-top:1px dashed rgba(232,196,104,0.2);
+    padding-top:8px;
+  }
+  .vars b{ color:var(--gold); font-family:"JetBrains Mono",monospace; }
+
+  #emptyState{
+    display:none;
+    text-align:center;
+    color:var(--muted);
+    padding:50px 20px;
+    font-size:14px;
+  }
+
+  footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:12px;
+    padding:20px;
+    border-top:1px solid rgba(232,196,104,0.12);
+  }
+  footer b{ color:var(--gold-soft); }
+
+  @media (max-width:520px){
+    .stats{ gap:18px; }
+    .grid{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <canvas id="constellation"></canvas>
+  <div class="eyebrow">Physics · Mathematics</div>
+  <h1> علاقات   فيزيائية</h1>
+  <p class="subtitle">شبكة من العلاقات الرياضية التي تربط مفاهيم الفيزياء ببعضها — ابحث، صنّف، وتصفّح المعادلات حسب فرعها.</p>
+  <div class="stats">
+    <div class="stat"><b id="statTotal">0</b><span>علاقة رياضية</span></div>
+    <div class="stat"><b id="statCats">0</b><span>أفرع فيزيائية</span></div>
+  </div>
+</header>
+
+<div class="controls">
+  <input type="text" id="searchBox" placeholder="ابحث عن علاقة، رمز، أو مفهوم… مثال: الطاقة، القوة، E=mc²">
+  <div class="chips" id="chips"></div>
+</div>
+
+<main>
+  <div id="emptyState">لا توجد نتائج مطابقة لبحثك.</div>
+  <div id="content"></div>
+</main>
+
+<footer>
+  مرجع تفاعلي للعلاقات الرياضية في الفيزياء — جزء من <b>مشروع نجيب التعليمي</b>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+/* ============ DATA ============ */
+const CATEGORIES = [
+  { key:'mech',   name:'الميكانيكا',            symbol:'F=ma' },
+  { key:'thermo', name:'الديناميكا الحرارية',    symbol:'PV=nRT' },
+  { key:'em',     name:'الكهرباء والمغناطيسية',   symbol:'V=IR' },
+  { key:'waves',  name:'الموجات والضوء',          symbol:'v=fλ' },
+  { key:'modern', name:'الفيزياء الحديثة',        symbol:'E=mc²' },
+  { key:'astro',  name:'الجاذبية والفلك',         symbol:'F=Gm₁m₂/r²' },
+];
+
+const FORMULAS = [
+  // ---- mechanics ----
+  {cat:'mech', name:'السرعة المتوسطة', latex:'v=\\dfrac{d}{t}', desc:'المسافة المقطوعة مقسومة على الزمن اللازم لقطعها.', vars:'v: السرعة، d: المسافة، t: الزمن'},
+  {cat:'mech', name:'التسارع', latex:'a=\\dfrac{\\Delta v}{\\Delta t}', desc:'معدل تغيّر السرعة مع الزمن.', vars:'a: التسارع، Δv: تغيّر السرعة، Δt: الزمن'},
+  {cat:'mech', name:'قانون نيوتن الثاني', latex:'F=ma', desc:'محصلة القوى المؤثرة على جسم تساوي حاصل ضرب كتلته في تسارعه.', vars:'F: القوة، m: الكتلة، a: التسارع'},
+  {cat:'mech', name:'الوزن', latex:'W=mg', desc:'قوة الجاذبية المؤثرة على كتلة عند سطح الأرض.', vars:'W: الوزن، m: الكتلة، g: تسارع الجاذبية'},
+  {cat:'mech', name:'الزخم الخطي', latex:'p=mv', desc:'مقدار حركة الجسم الناتج عن كتلته وسرعته.', vars:'p: الزخم، m: الكتلة، v: السرعة'},
+  {cat:'mech', name:'الدفع (الاندفاع)', latex:'J=F\\Delta t=\\Delta p', desc:'التغيّر في الزخم الناتج عن قوة مؤثرة خلال فترة زمنية.', vars:'J: الدفع، F: القوة، Δt: الزمن'},
+  {cat:'mech', name:'الطاقة الحركية', latex:'KE=\\dfrac{1}{2}mv^2', desc:'الطاقة المخزّنة في الجسم بسبب حركته.', vars:'KE: الطاقة الحركية، m: الكتلة، v: السرعة'},
+  {cat:'mech', name:'الطاقة الكامنة الثقالية', latex:'PE=mgh', desc:'الطاقة المخزّنة بسبب ارتفاع الجسم عن سطح مرجعي.', vars:'PE: الطاقة الكامنة، h: الارتفاع'},
+  {cat:'mech', name:'الطاقة الكامنة المرنة', latex:'PE_s=\\dfrac{1}{2}kx^2', desc:'الطاقة المخزّنة في نابض مشدود أو مضغوط.', vars:'k: ثابت النابض، x: مقدار الاستطالة'},
+  {cat:'mech', name:'قانون هوك', latex:'F=-kx', desc:'قوة الاستعادة في نابض تتناسب طرديًا مع الاستطالة وتعاكسها في الاتجاه.', vars:'k: ثابت النابض، x: الاستطالة'},
+  {cat:'mech', name:'الشغل', latex:'W=Fd\\cos\\theta', desc:'الطاقة المنقولة عبر قوة تؤثر على مسافة معينة.', vars:'θ: الزاوية بين القوة والإزاحة'},
+  {cat:'mech', name:'القدرة', latex:'P=\\dfrac{W}{t}=Fv', desc:'معدل إنجاز الشغل أو نقل الطاقة.', vars:'P: القدرة، W: الشغل'},
+  {cat:'mech', name:'معادلة السرعة بعجلة ثابتة', latex:'v=v_0+at', desc:'سرعة الجسم بعد زمن t عند تسارع ثابت.', vars:'v₀: السرعة الابتدائية'},
+  {cat:'mech', name:'معادلة الإزاحة بعجلة ثابتة', latex:'x=x_0+v_0t+\\dfrac{1}{2}at^2', desc:'موضع الجسم بعد زمن t عند تسارع ثابت.', vars:'x₀: الموضع الابتدائي'},
+  {cat:'mech', name:'علاقة السرعة والإزاحة', latex:'v^2=v_0^2+2a(x-x_0)', desc:'تربط السرعة النهائية بالإزاحة دون الحاجة للزمن.', vars:'—'},
+  {cat:'mech', name:'عزم القوة', latex:'\\tau=rF\\sin\\theta', desc:'مقدار تأثير القوة في إحداث دوران حول محور.', vars:'τ: عزم القوة، r: ذراع القوة'},
+  {cat:'mech', name:'الزخم الزاوي', latex:'L=I\\omega', desc:'المكافئ الدوراني للزخم الخطي.', vars:'I: عزم القصور الذاتي، ω: السرعة الزاوية'},
+  {cat:'mech', name:'عزم القصور الذاتي لقرص', latex:'I=\\dfrac{1}{2}MR^2', desc:'مقاومة القرص الصلب لتغيّر حركته الدورانية.', vars:'M: الكتلة، R: نصف القطر'},
+  {cat:'mech', name:'القوة المركزية', latex:'F_c=\\dfrac{mv^2}{r}', desc:'القوة اللازمة لإبقاء جسم في مسار دائري.', vars:'r: نصف قطر الدوران'},
+  {cat:'mech', name:'قوة الاحتكاك', latex:'f=\\mu N', desc:'القوة المقاومة للحركة النسبية بين سطحين متلامسين.', vars:'μ: معامل الاحتكاك، N: القوة العمودية'},
+
+  // ---- thermodynamics ----
+  {cat:'thermo', name:'القانون الأول للديناميكا الحرارية', latex:'\\Delta U=Q-W', desc:'التغيّر في الطاقة الداخلية يساوي الحرارة المضافة ناقص الشغل المبذول.', vars:'U: الطاقة الداخلية، Q: الحرارة، W: الشغل'},
+  {cat:'thermo', name:'معادلة الغاز المثالي', latex:'PV=nRT', desc:'تربط ضغط الغاز وحجمه ودرجة حرارته بعدد المولات.', vars:'P: الضغط، V: الحجم، n: عدد المولات، R: ثابت الغازات، T: الحرارة المطلقة'},
+  {cat:'thermo', name:'السعة الحرارية', latex:'Q=mc\\Delta T', desc:'كمية الحرارة اللازمة لتغيير درجة حرارة مادة.', vars:'c: الحرارة النوعية، ΔT: تغيّر درجة الحرارة'},
+  {cat:'thermo', name:'الحرارة الكامنة', latex:'Q=mL', desc:'الحرارة اللازمة لتغيير حالة المادة دون تغيير درجة حرارتها.', vars:'L: الحرارة الكامنة النوعية'},
+  {cat:'thermo', name:'كفاءة كارنو', latex:'\\eta=1-\\dfrac{T_c}{T_h}', desc:'أقصى كفاءة نظرية لمحرك حراري يعمل بين خزانين حراريين.', vars:'Tc: حرارة الخزان البارد، Th: حرارة الخزان الساخن'},
+  {cat:'thermo', name:'التوصيل الحراري', latex:'\\dfrac{Q}{t}=\\dfrac{kA\\Delta T}{d}', desc:'معدل انتقال الحرارة عبر مادة موصلة.', vars:'k: معامل التوصيل، A: المساحة، d: السمك'},
+  {cat:'thermo', name:'قانون ستيفان-بولتزمان', latex:'P=\\sigma A T^4', desc:'القدرة الإشعاعية الصادرة عن جسم أسود تتناسب مع القوة الرابعة لحرارته.', vars:'σ: ثابت ستيفان-بولتزمان، A: المساحة'},
+  {cat:'thermo', name:'قانون دالتون للضغوط الجزئية', latex:'P_{total}=\\sum P_i', desc:'الضغط الكلي لمزيج غازي يساوي مجموع الضغوط الجزئية لكل غاز.', vars:'Pᵢ: الضغط الجزئي للغاز i'},
+  {cat:'thermo', name:'قانون بويل', latex:'P_1V_1=P_2V_2', desc:'عند ثبات الحرارة، يتناسب الضغط عكسيًا مع الحجم.', vars:'—'},
+  {cat:'thermo', name:'قانون شارل', latex:'\\dfrac{V_1}{T_1}=\\dfrac{V_2}{T_2}', desc:'عند ثبات الضغط، يتناسب الحجم طرديًا مع الحرارة المطلقة.', vars:'—'},
+  {cat:'thermo', name:'الإنتروبيا', latex:'\\Delta S=\\dfrac{Q}{T}', desc:'مقياس لدرجة العشوائية أو الفوضى في نظام حراري.', vars:'S: الإنتروبيا'},
+  {cat:'thermo', name:'متوسط الطاقة الحركية للجزيئات', latex:'\\overline{KE}=\\dfrac{3}{2}k_BT', desc:'متوسط الطاقة الحركية لجزيئات غاز مثالي عند حرارة معينة.', vars:'k_B: ثابت بولتزمان'},
+
+  // ---- electricity & magnetism ----
+  {cat:'em', name:'قانون أوم', latex:'V=IR', desc:'فرق الجهد عبر موصل يتناسب طرديًا مع التيار المار فيه.', vars:'V: الجهد، I: التيار، R: المقاومة'},
+  {cat:'em', name:'قانون كولوم', latex:'F=k\\dfrac{q_1q_2}{r^2}', desc:'القوة بين شحنتين نقطيتين تتناسب عكسيًا مع مربع المسافة بينهما.', vars:'k: ثابت كولوم، q₁,q₂: الشحنتان، r: المسافة'},
+  {cat:'em', name:'شدة المجال الكهربائي', latex:'E=\\dfrac{F}{q}=\\dfrac{kQ}{r^2}', desc:'القوة المؤثرة على وحدة الشحنة في نقطة من المجال.', vars:'Q: الشحنة المصدر'},
+  {cat:'em', name:'الجهد الكهربائي', latex:'V=\\dfrac{kQ}{r}', desc:'الشغل اللازم لنقل وحدة شحنة من اللانهاية إلى نقطة في المجال.', vars:'—'},
+  {cat:'em', name:'السعة الكهربائية', latex:'C=\\dfrac{Q}{V}', desc:'قدرة المكثف على تخزين الشحنة لكل وحدة جهد.', vars:'C: السعة، Q: الشحنة المخزنة'},
+  {cat:'em', name:'الطاقة المخزنة في مكثف', latex:'U=\\dfrac{1}{2}CV^2', desc:'الطاقة الكهربائية المختزنة في مكثف مشحون.', vars:'—'},
+  {cat:'em', name:'القدرة الكهربائية', latex:'P=VI=I^2R=\\dfrac{V^2}{R}', desc:'معدل استهلاك أو توليد الطاقة الكهربائية.', vars:'—'},
+  {cat:'em', name:'المقاومة المكافئة (توالي)', latex:'R_{eq}=R_1+R_2+\\cdots', desc:'مجموع المقاومات في دارة توالي.', vars:'—'},
+  {cat:'em', name:'المقاومة المكافئة (توازي)', latex:'\\dfrac{1}{R_{eq}}=\\dfrac{1}{R_1}+\\dfrac{1}{R_2}+\\cdots', desc:'المقاومة المكافئة لمقاومات موصولة على التوازي.', vars:'—'},
+  {cat:'em', name:'قانون فاراداي للحث الكهرومغناطيسي', latex:'\\varepsilon=-N\\dfrac{d\\Phi}{dt}', desc:'القوة الدافعة الكهربائية المحرضة تتناسب مع معدل تغيّر التدفق المغناطيسي.', vars:'N: عدد اللفات، Φ: التدفق المغناطيسي'},
+  {cat:'em', name:'قوة لورنتز', latex:'\\vec F=q\\vec E+q\\vec v\\times\\vec B', desc:'القوة الكلية المؤثرة على شحنة متحركة في مجالين كهربائي ومغناطيسي.', vars:'B: المجال المغناطيسي'},
+  {cat:'em', name:'قوة أمبير على سلك حامل للتيار', latex:'F=BIL\\sin\\theta', desc:'القوة المغناطيسية المؤثرة على سلك يحمل تيارًا داخل مجال مغناطيسي.', vars:'L: طول السلك'},
+  {cat:'em', name:'المجال المغناطيسي حول سلك مستقيم', latex:'B=\\dfrac{\\mu_0 I}{2\\pi r}', desc:'شدة المجال المغناطيسي على بعد r من سلك مستقيم طويل.', vars:'μ₀: نفاذية الفراغ'},
+  {cat:'em', name:'قانون كيرشوف للتيار', latex:'\\sum I_{in}=\\sum I_{out}', desc:'مجموع التيارات الداخلة إلى عقدة يساوي مجموع التيارات الخارجة منها.', vars:'—'},
+  {cat:'em', name:'الحث الذاتي', latex:'\\varepsilon=-L\\dfrac{dI}{dt}', desc:'القوة الدافعة الكهربائية الناتجة عن تغيّر التيار في ملف.', vars:'L: معامل الحث الذاتي'},
+  {cat:'em', name:'الطاقة المخزنة في ملف', latex:'U=\\dfrac{1}{2}LI^2', desc:'الطاقة المغناطيسية المختزنة في ملف يحمل تيارًا.', vars:'—'},
+  {cat:'em', name:'التردد الزاوي لدائرة RLC', latex:'\\omega_0=\\dfrac{1}{\\sqrt{LC}}', desc:'تردد الرنين الطبيعي لدائرة تحتوي محاثة ومكثف.', vars:'—'},
+
+  // ---- waves & optics ----
+  {cat:'waves', name:'سرعة الموجة', latex:'v=f\\lambda', desc:'سرعة انتشار الموجة تساوي حاصل ضرب ترددها في طولها الموجي.', vars:'f: التردد، λ: الطول الموجي'},
+  {cat:'waves', name:'معادلة العدسات الرقيقة', latex:'\\dfrac{1}{f}=\\dfrac{1}{d_o}+\\dfrac{1}{d_i}', desc:'تربط البعد البؤري بمسافتي الجسم والصورة عن العدسة.', vars:'f: البعد البؤري، d_o: مسافة الجسم، d_i: مسافة الصورة'},
+  {cat:'waves', name:'التكبير', latex:'m=-\\dfrac{d_i}{d_o}=\\dfrac{h_i}{h_o}', desc:'نسبة طول الصورة إلى طول الجسم الأصلي.', vars:'h_i: طول الصورة، h_o: طول الجسم'},
+  {cat:'waves', name:'قانون سنيل للانكسار', latex:'n_1\\sin\\theta_1=n_2\\sin\\theta_2', desc:'يصف انحناء الضوء عند عبوره بين وسطين مختلفي الكثافة الضوئية.', vars:'n: معامل الانكسار، θ: زاوية السقوط أو الانكسار'},
+  {cat:'waves', name:'تأثير دوبلر', latex:"f'=f\\dfrac{v\\pm v_o}{v\\mp v_s}", desc:'تغيّر التردد المُدرَك بسبب الحركة النسبية بين المصدر والراصد.', vars:'v_o: سرعة الراصد، v_s: سرعة المصدر'},
+  {cat:'waves', name:'طاقة الفوتون', latex:'E=hf', desc:'طاقة الفوتون تتناسب طرديًا مع تردده.', vars:'h: ثابت بلانك'},
+  {cat:'waves', name:'حيود الشق المفرد', latex:'a\\sin\\theta=m\\lambda', desc:'شروط تكوّن النقاط المظلمة في نمط حيود شق مفرد.', vars:'a: عرض الشق، m: رتبة الحيود'},
+  {cat:'waves', name:'تداخل يونغ بالشقين', latex:'d\\sin\\theta=m\\lambda', desc:'شروط تكوّن الهدب المضيئة في تجربة الشقين.', vars:'d: المسافة بين الشقين'},
+  {cat:'waves', name:'مستوى شدة الصوت', latex:'\\beta=10\\log\\dfrac{I}{I_0}', desc:'قياس شدة الصوت بوحدة الديسيبل نسبةً إلى عتبة السمع.', vars:'I₀: عتبة الشدة المرجعية'},
+  {cat:'waves', name:'الحركة التوافقية البسيطة (نابض)', latex:'T=2\\pi\\sqrt{\\dfrac{m}{k}}', desc:'الزمن الدوري لجسم يهتز مثبتًا بنابض.', vars:'T: الزمن الدوري'},
+  {cat:'waves', name:'البندول البسيط', latex:'T=2\\pi\\sqrt{\\dfrac{L}{g}}', desc:'الزمن الدوري لبندول بسيط عند زوايا تأرجح صغيرة.', vars:'L: طول الخيط'},
+  {cat:'waves', name:'معادلة الموجة المتحركة', latex:'y=A\\sin(kx-\\omega t)', desc:'الوصف الرياضي لموجة جيبية متحركة في اتجاه واحد.', vars:'A: السعة، k: العدد الموجي، ω: التردد الزاوي'},
+
+  // ---- modern physics ----
+  {cat:'modern', name:'تكافؤ الكتلة والطاقة', latex:'E=mc^2', desc:'الكتلة والطاقة وجهان لحقيقة واحدة، تتحول إحداهما إلى الأخرى.', vars:'c: سرعة الضوء'},
+  {cat:'modern', name:'تمدد الزمن', latex:"\\Delta t'=\\dfrac{\\Delta t}{\\sqrt{1-v^2/c^2}}", desc:'الزمن المُقاس يبدو أطول للراصد الساكن عندما يتحرك الجسم بسرعة قريبة من الضوء.', vars:'v: سرعة الجسم'},
+  {cat:'modern', name:'تقلص الطول', latex:"L'=L\\sqrt{1-v^2/c^2}", desc:'يبدو طول الجسم أقصر في اتجاه حركته عند سرعات نسبية عالية.', vars:'L: الطول في الإطار الساكن'},
+  {cat:'modern', name:'مبدأ عدم اليقين لهايزنبرغ', latex:'\\Delta x\\,\\Delta p\\ge \\dfrac{\\hbar}{2}', desc:'استحالة تحديد الموضع والزخم لجسيم بدقة تامة في آن واحد.', vars:'ħ: ثابت بلانك المخفّض'},
+  {cat:'modern', name:'طول موجة دي برولي', latex:'\\lambda=\\dfrac{h}{p}', desc:'كل جسيم مادي له طول موجي مرتبط بزخمه الخطي.', vars:'p: الزخم الخطي'},
+  {cat:'modern', name:'التأثير الكهروضوئي', latex:'E_k=hf-\\phi', desc:'الطاقة الحركية القصوى للإلكترون المنبعث تساوي طاقة الفوتون ناقص دالة الشغل.', vars:'φ: دالة الشغل للفلز'},
+  {cat:'modern', name:'طاقة الربط النووي', latex:'\\Delta E=\\Delta m\\,c^2', desc:'الطاقة اللازمة لتفكيك نواة ذرية ترتبط بنقص الكتلة فيها.', vars:'Δm: نقص الكتلة'},
+  {cat:'modern', name:'قانون التناقص الإشعاعي', latex:'N=N_0e^{-\\lambda t}', desc:'عدد الأنوية المشعة المتبقية يتناقص أسّيًا مع الزمن.', vars:'λ: ثابت الاضمحلال'},
+  {cat:'modern', name:'عمر النصف', latex:'t_{1/2}=\\dfrac{\\ln 2}{\\lambda}', desc:'الزمن اللازم لاضمحلال نصف كمية المادة المشعة.', vars:'—'},
+  {cat:'modern', name:'مستويات طاقة بور للهيدروجين', latex:'E_n=-\\dfrac{13.6}{n^2}\\text{ eV}', desc:'طاقة الإلكترون في المستوى n داخل ذرة الهيدروجين.', vars:'n: العدد الكمي الرئيسي'},
+
+  // ---- astro / gravitation ----
+  {cat:'astro', name:'قانون الجذب العام', latex:'F=G\\dfrac{m_1m_2}{r^2}', desc:'كل جسمين يتجاذبان بقوة تتناسب طرديًا مع كتلتيهما وعكسيًا مع مربع المسافة بينهما.', vars:'G: ثابت الجذب العام'},
+  {cat:'astro', name:'السرعة المدارية', latex:'v=\\sqrt{\\dfrac{GM}{r}}', desc:'السرعة اللازمة لجسم ليبقى في مدار دائري حول جسم مركزي.', vars:'M: كتلة الجسم المركزي'},
+  {cat:'astro', name:'قانون كبلر الثالث', latex:'T^2\\propto r^3', desc:'مربع الزمن المداري يتناسب طرديًا مع مكعب متوسط بعد المدار.', vars:'T: الزمن المداري، r: نصف المحور الأكبر'},
+  {cat:'astro', name:'سرعة الإفلات', latex:'v_{esc}=\\sqrt{\\dfrac{2GM}{r}}', desc:'أقل سرعة يحتاجها جسم للإفلات من الجذب الثقالي لجرم سماوي.', vars:'—'},
+  {cat:'astro', name:'نصف قطر شفارتزشيلد', latex:'R_s=\\dfrac{2GM}{c^2}', desc:'نصف القطر الذي إذا انضغطت داخله كتلة معينة تتحول إلى ثقب أسود.', vars:'—'},
+];
+
+/* ============ RENDER ============ */
+const contentEl = document.getElementById('content');
+const chipsEl = document.getElementById('chips');
+const emptyEl = document.getElementById('emptyState');
+const searchEl = document.getElementById('searchBox');
+
+document.getElementById('statTotal').textContent = FORMULAS.length;
+document.getElementById('statCats').textContent = CATEGORIES.length;
+
+let activeCat = 'all';
+
+function buildChips(){
+  const allChip = document.createElement('button');
+  allChip.className = 'chip active';
+  allChip.textContent = 'الكل';
+  allChip.dataset.key = 'all';
+  chipsEl.appendChild(allChip);
+  CATEGORIES.forEach(c=>{
+    const chip = document.createElement('button');
+    chip.className = 'chip';
+    chip.textContent = c.name;
+    chip.dataset.key = c.key;
+    chipsEl.appendChild(chip);
+  });
+  chipsEl.addEventListener('click', e=>{
+    if(e.target.tagName !== 'BUTTON') return;
+    activeCat = e.target.dataset.key;
+    [...chipsEl.children].forEach(c=>c.classList.toggle('active', c===e.target));
+    render();
+  });
+}
+
+function matches(f, query){
+  if(!query) return true;
+  const hay = (f.name + ' ' + f.desc + ' ' + f.vars).toLowerCase();
+  return hay.includes(query.toLowerCase());
+}
+
+function render(){
+  const query = searchEl.value.trim();
+  contentEl.innerHTML = '';
+  let totalShown = 0;
+
+  CATEGORIES.forEach(cat=>{
+    if(activeCat !== 'all' && activeCat !== cat.key) return;
+    const items = FORMULAS.filter(f=>f.cat===cat.key && matches(f, query));
+    if(items.length === 0) return;
+    totalShown += items.length;
+
+    const heading = document.createElement('div');
+    heading.className = 'catHeading';
+    heading.textContent = `${cat.name} · ${items.length}`;
+    contentEl.appendChild(heading);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    items.forEach(f=>{
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <h3>${f.name}</h3>
+        <div class="eqWrap"><span class="eq">\\(${f.latex}\\)</span></div>
+        <p class="desc">${f.desc}</p>
+        <div class="vars">${f.vars}</div>
+      `;
+      grid.appendChild(card);
+    });
+    contentEl.appendChild(grid);
+  });
+
+  emptyEl.style.display = totalShown === 0 ? 'block' : 'none';
+
+  if(window.renderMathInElement){
+    renderMathInElement(contentEl, {
+      delimiters:[{left:'\\(', right:'\\)', display:false}]
+    });
+  }
+}
+
+buildChips();
+render();
+searchEl.addEventListener('input', render);
+
+/* ============ HERO CONSTELLATION ============ */
+(function(){
+  const canvas = document.getElementById('constellation');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+
+  function resize(){
+    W = canvas.clientWidth;
+    H = canvas.clientHeight;
+    canvas.width = W * devicePixelRatio;
+    canvas.height = H * devicePixelRatio;
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const labels = ['F=ma','E=mc²','PV=nRT','V=IR','v=fλ','ΔS=Q/T','p=mv','λ=h/p','F=Gm₁m₂/r²','T=2π√(L/g)','B=μ₀I/2πr','E=hf'];
+  const nodes = labels.map((label,i)=>({
+    label,
+    x: Math.random()*W,
+    y: Math.random()*H,
+    vx: (Math.random()-0.5)*0.25,
+    vy: (Math.random()-0.5)*0.25,
+  }));
+
+  function step(){
+    ctx.clearRect(0,0,W,H);
+
+    nodes.forEach(n=>{
+      n.x += n.vx; n.y += n.vy;
+      if(n.x < 20 || n.x > W-20) n.vx *= -1;
+      if(n.y < 20 || n.y > H-20) n.vy *= -1;
+    });
+
+    // links
+    for(let i=0;i<nodes.length;i++){
+      for(let j=i+1;j<nodes.length;j++){
+        const a = nodes[i], b = nodes[j];
+        const dx = a.x-b.x, dy = a.y-b.y;
+        const dist = Math.sqrt(dx*dx+dy*dy);
+        const maxDist = W < 500 ? 140 : 210;
+        if(dist < maxDist){
+          ctx.strokeStyle = `rgba(232,196,104,${0.22*(1-dist/maxDist)})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(a.x,a.y);
+          ctx.lineTo(b.x,b.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // nodes
+    ctx.font = '600 12px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    nodes.forEach(n=>{
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, 3, 0, Math.PI*2);
+      ctx.fillStyle = '#f0d896';
+      ctx.shadowColor = 'rgba(232,196,104,0.8)';
+      ctx.shadowBlur = 8;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(219,228,255,0.55)';
+      ctx.fillText(n.label, n.x, n.y-10);
+    });
+
+    requestAnimationFrame(step);
+  }
+  step();
+})();
+</script>
+
+</body>
+</html>
+
+

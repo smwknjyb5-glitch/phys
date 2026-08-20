@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>محاكاة منحنى السيكلويد</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Tahoma','Segoe UI',sans-serif; }
+  body {
+    background: radial-gradient(circle at 25% 0%, #2a3f54, #0d1b2a 70%);
+    color:#fff; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:20px;
+  }
+  h1 { font-size:1.6em; color:#ffd166; text-shadow:0 0 10px rgba(255,209,102,.5); margin-bottom:4px; text-align:center;}
+  .sub { color:#9fb3c8; font-size:.88em; margin-bottom:16px; text-align:center; max-width:600px; }
+  .wrap { display:flex; gap:20px; width:100%; max-width:1050px; flex-wrap:wrap; justify-content:center; }
+  .panel { background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); border-radius:16px; padding:18px; backdrop-filter: blur(6px); }
+  #stageWrap { flex:1 1 480px; min-width:320px; display:flex; flex-direction:column; align-items:center; }
+  canvas { background: linear-gradient(180deg,#1e3c72,#274472); border-radius:12px; border:2px solid rgba(255,255,255,0.2); max-width:100%; }
+  .controls { flex:1 1 270px; min-width:250px; display:flex; flex-direction:column; gap:14px; }
+  .row { display:flex; flex-direction:column; gap:6px; }
+  label { font-size:.88em; color:#ffd166; }
+  input[type=range] { width:100%; accent-color:#ffd166; }
+  select {
+    padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.2);
+    background:rgba(20,30,45,.9); color:#fff; font-size:.85em;
+  }
+  .btns { display:flex; gap:10px; margin-top:6px; flex-wrap:wrap; }
+  button { flex:1; min-width:90px; padding:10px; border:none; border-radius:10px; cursor:pointer; font-weight:bold; font-size:.95em; transition:.2s; }
+  #startBtn { background:#06d6a0; color:#04332a;}
+  #startBtn:hover { background:#05c293; }
+  #resetBtn { background:#ef476f; color:#fff;}
+  #resetBtn:hover { background:#d8385c; }
+  .stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
+  .stat { background:rgba(0,0,0,0.25); border-radius:10px; padding:10px; text-align:center; }
+  .stat .label { font-size:.75em; color:#9fb3c8; }
+  .stat .value { font-size:1.1em; color:#ffd166; font-weight:bold; margin-top:4px; }
+  .formula { margin-top:6px; background:rgba(0,0,0,0.25); border-radius:10px; padding:12px; font-size:.83em; line-height:1.8; color:#dce8f7; }
+  .formula b { color:#06d6a0; }
+  .check-row { display:flex; align-items:center; gap:8px; font-size:.85em; color:#cfe0f3; }
+  footer { margin-top:16px; color:#7e93ab; font-size:.72em; text-align:center; }
+</style>
+</head>
+<body>
+
+<h1>🌀 محاكاة منحنى السيكلويد (Cycloid)</h1>
+<div class="sub">المسار الذي ترسمه نقطة ثابتة على محيط دائرة وهي تتدحرج بدون انزلاق على خط مستقيم</div>
+
+<div class="wrap">
+  <div class="panel" id="stageWrap">
+    <canvas id="stage" width="640" height="320"></canvas>
+    <div class="stats">
+      <div class="stat"><div class="label">الزاوية θ (راديان)</div><div class="value" id="angleVal">0.00</div></div>
+      <div class="stat"><div class="label">x</div><div class="value" id="xVal">0.00</div></div>
+      <div class="stat"><div class="label">y</div><div class="value" id="yVal">0.00</div></div>
+      <div class="stat"><div class="label">عدد الدورات</div><div class="value" id="revVal">0.00</div></div>
+    </div>
+  </div>
+
+  <div class="panel controls">
+    <div class="row">
+      <label>نصف قطر الدائرة r (بكسل): <span id="rLabel">40</span></label>
+      <input type="range" id="rSlider" min="15" max="70" value="40" step="1">
+    </div>
+    <div class="row">
+      <label>سرعة الدوران (راديان/ث): <span id="speedLabel">1.5</span></label>
+      <input type="range" id="speedSlider" min="0.2" max="4" value="1.5" step="0.1">
+    </div>
+    <div class="row">
+      <label>نوع المنحنى:</label>
+      <select id="curveType">
+        <option value="normal">سيكلويد عادي (النقطة على المحيط)</option>
+        <option value="curtate">سيكلويد ناقص (نقطة داخل الدائرة)</option>
+        <option value="prolate">سيكلويد فائض (نقطة خارج الدائرة)</option>
+      </select>
+    </div>
+    <div class="row" id="distRow" style="display:none;">
+      <label>بُعد النقطة عن المركز (نسبة من r): <span id="distLabel">0.6</span></label>
+      <input type="range" id="distSlider" min="0.2" max="1.8" value="0.6" step="0.05">
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="showCircle" checked>
+      <label for="showCircle" style="margin:0;">إظهار الدائرة المتدحرجة</label>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="showRadius" checked>
+      <label for="showRadius" style="margin:0;">إظهار نصف القطر للنقطة</label>
+    </div>
+    <div class="btns">
+      <button id="startBtn">▶ ابدأ</button>
+      <button id="resetBtn">⟲ إعادة</button>
+    </div>
+    <div class="formula">
+      <div><b>المعادلات البارامترية:</b></div>
+      <div>x(θ) = r(θ − sinθ)</div>
+      <div>y(θ) = r(1 − cosθ)</div>
+      <div>حيث θ هي زاوية الدوران وr نصف قطر الدائرة</div>
+    </div>
+  </div>
+</div>
+
+<footer>محاكاة رياضية تعليمية — جرّب أنواع السيكلويد المختلفة وغيّر نصف القطر والسرعة</footer>
+
+<script>
+const canvas = document.getElementById('stage');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+const rSlider = document.getElementById('rSlider');
+const speedSlider = document.getElementById('speedSlider');
+const curveType = document.getElementById('curveType');
+const distSlider = document.getElementById('distSlider');
+const distRow = document.getElementById('distRow');
+const showCircle = document.getElementById('showCircle');
+const showRadius = document.getElementById('showRadius');
+
+const rLabel = document.getElementById('rLabel');
+const speedLabel = document.getElementById('speedLabel');
+const distLabel = document.getElementById('distLabel');
+
+const angleVal = document.getElementById('angleVal');
+const xVal = document.getElementById('xVal');
+const yVal = document.getElementById('yVal');
+const revVal = document.getElementById('revVal');
+
+const startBtn = document.getElementById('startBtn');
+const resetBtn = document.getElementById('resetBtn');
+
+const baseY = H - 50;
+const startX = 40;
+
+let state = {
+  r: 40, speed: 1.5, theta: 0, running: false,
+  type: 'normal', distRatio: 0.6,
+  trail: []
+};
+
+function updateLabels(){
+  rLabel.textContent = rSlider.value;
+  speedLabel.textContent = parseFloat(speedSlider.value).toFixed(1);
+  distLabel.textContent = parseFloat(distSlider.value).toFixed(2);
+  distRow.style.display = (curveType.value === 'normal') ? 'none' : 'flex';
+}
+
+[rSlider, speedSlider, distSlider].forEach(s=>{
+  s.addEventListener('input', ()=>{ updateLabels(); if(!state.running) resetSim(true); });
+});
+curveType.addEventListener('change', ()=>{ updateLabels(); resetSim(true); });
+showCircle.addEventListener('change', draw);
+showRadius.addEventListener('change', draw);
+
+function pointDistance(){
+  const r = state.r;
+  if (state.type === 'normal') return r;
+  return r * state.distRatio;
+}
+
+function resetSim(redraw=true){
+  state.r = parseFloat(rSlider.value);
+  state.speed = parseFloat(speedSlider.value);
+  state.type = curveType.value;
+  state.distRatio = parseFloat(distSlider.value);
+  state.theta = 0;
+  state.running = false;
+  state.trail = [];
+  angleVal.textContent = '0.00';
+  xVal.textContent = '0.00';
+  yVal.textContent = '0.00';
+  revVal.textContent = '0.00';
+  startBtn.textContent = '▶ ابدأ';
+  if (redraw) draw();
+}
+
+function maxTheta(){
+  // أقصى زاوية قبل خروج الدائرة من حدود الكانفاس
+  const r = state.r;
+  const maxX = W - startX - 20;
+  return maxX / r;
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+
+  // خط الأرض
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, baseY);
+  ctx.lineTo(W, baseY);
+  ctx.stroke();
+
+  const r = state.r;
+  const d = pointDistance();
+  const cx = startX + r*state.theta; // مركز الدائرة
+  const cy = baseY - r;
+
+  // رسم المسار (trail)
+  ctx.strokeStyle = '#ffd166';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  state.trail.forEach((p,i)=>{
+    const px = startX + r*(p - Math.sin(p)) * (state.type==='normal'?1:1);
+    // إعادة حساب الموقع الصحيح أدناه بدالة موحدة
+  });
+  // إعادة رسم المسار بدقة باستخدام نفس صيغة موقع النقطة
+  ctx.beginPath();
+  let first = true;
+  state.trail.forEach(th=>{
+    const px = startX + r*th - d*Math.sin(th);
+    const py = baseY - r + d*Math.cos(th);
+    if (first){ ctx.moveTo(px,py); first=false; } else ctx.lineTo(px,py);
+  });
+  ctx.stroke();
+
+  // الدائرة المتدحرجة
+  if (showCircle.checked) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.stroke();
+
+    // علامة تدور مع الدائرة لتوضيح الدوران (نقطة مرجعية على المحيط)
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.beginPath();
+    ctx.arc(cx + r*Math.sin(state.theta), cy - r*Math.cos(state.theta), 3, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // موقع النقطة المتتبَّعة الحالية
+  const px = cx - d*Math.sin(state.theta);
+  const py = cy + d*Math.cos(state.theta);
+
+  // نصف قطر يربط مركز الدائرة بالنقطة
+  if (showRadius.checked) {
+    ctx.strokeStyle = '#06d6a0';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(px, py);
+    ctx.stroke();
+    // مركز الدائرة
+    ctx.fillStyle = '#06d6a0';
+    ctx.beginPath(); ctx.arc(cx,cy,3,0,Math.PI*2); ctx.fill();
+  }
+
+  // النقطة المتتبَّعة
+  const grad = ctx.createRadialGradient(px-3,py-3,1,px,py,8);
+  grad.addColorStop(0,'#fff3b0');
+  grad.addColorStop(1,'#ef476f');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(px, py, 7, 0, Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+  ctx.stroke();
+}
+
+let lastTime = null;
+function loop(ts){
+  if (!state.running) return;
+  if (lastTime === null) lastTime = ts;
+  let dt = (ts-lastTime)/1000;
+  dt = Math.min(dt, 0.033);
+  lastTime = ts;
+
+  state.theta += state.speed * dt;
+  state.trail.push(state.theta);
+
+  const mt = maxTheta();
+  if (state.theta >= mt) {
+    state.theta = mt;
+    state.running = false;
+    startBtn.textContent = '▶ ابدأ';
+  }
+
+  const r = state.r, d = pointDistance();
+  const px = startX + r*state.theta - d*Math.sin(state.theta);
+  const py = (baseY - r) + d*Math.cos(state.theta);
+
+  angleVal.textContent = state.theta.toFixed(2);
+  xVal.textContent = (state.theta*r/r).toFixed(2); // عرض θ كقيمة، x بالبكسل أدناه أوضح كرسم
+  xVal.textContent = px.toFixed(1);
+  yVal.textContent = py.toFixed(1);
+  revVal.textContent = (state.theta/(2*Math.PI)).toFixed(2);
+
+  draw();
+  if (state.running) requestAnimationFrame(loop);
+}
+
+startBtn.addEventListener('click', ()=>{
+  const mt = maxTheta();
+  if (state.theta >= mt) resetSim(false);
+  if (!state.running){
+    state.running = true; lastTime = null;
+    startBtn.textContent = '⏸ إيقاف مؤقت';
+    requestAnimationFrame(loop);
+  } else {
+    state.running = false;
+    startBtn.textContent = '▶ استئناف';
+  }
+});
+
+resetBtn.addEventListener('click', ()=>resetSim(true));
+
+updateLabels();
+resetSim(true);
+</script>
+
+</body>
+</html>
